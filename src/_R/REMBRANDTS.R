@@ -29,16 +29,20 @@ merged <- merge( merged, exonRawCounts[,c(1,ncol(exonRawCounts))],by="GeneID")
 merged <- merge( merged, intronRawCounts[,c(1,ncol(intronRawCounts))],by="GeneID")
 
 # optimize the total read count threshold so as to maximize correlation between exon and intron fold-changes
-for( i in seq(0,50,by=0.1))
-	if( sum(merged$MedianIntron > i & merged$MedianExon > i) > 500 )
+correl_all <- cor(
+	unlist(merged[ , 2:(nSample+1)]),
+	unlist(merged[ , (nSample+2):(2*nSample+1)]) )
+print( paste( "Total correlation is ", correl_all, sep="" ) )
+	
+correl_max <- -10
+for( i in seq(50,0,by=-0.1))
+	if( sum(merged$MedianIntron > i & merged$MedianExon > i) > 500 &
+		sum(merged$MedianIntron <= i+0.1 & merged$MedianExon <= i+0.1) > 0 )
 	{	
 		correl <- cor(
 			unlist(merged[ merged$MedianIntron > i & merged$MedianExon > i , 2:(nSample+1)]),
 			unlist(merged[ merged$MedianIntron > i & merged$MedianExon > i, (nSample+2):(2*nSample+1)]) )
 
-		if( i == 0 )
-			correl_max <- correl_all <- correl
-		
 		if( correl_max < correl )
 			correl_max <- correl
 		
@@ -49,6 +53,7 @@ for( i in seq(0,50,by=0.1))
   
 	}
 
+print( paste( "Maximum correlation is ", correl_max, sep="" ) )
 print( paste( "Selected threshold is ", threshold, sep="" ) )
 
 # the filtered exon counts
