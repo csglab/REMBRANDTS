@@ -46,7 +46,7 @@ correl_max <- -10
 cutoff_table <- data.frame(matrix(c(Inf,0,NA),nrow=1,ncol=3,dimnames=list("",c("Threshold","NumGenes","Correlation"))))
 cutoffs <- quantile( c(merged$MedianIntron, merged$MedianExon), probs = seq( 1, 0, -0.01 ) )
 for( i in cutoffs )
-	if( sum(merged$MedianIntron > i & merged$MedianExon > i) > 500 )
+	if( sum(merged$MedianIntron > i & merged$MedianExon > i) > 2000 )
 	{	
 		correl <- cor(
 			unlist(merged[ merged$MedianIntron > i & merged$MedianExon > i , 2:(nSample+1)]),
@@ -129,16 +129,16 @@ for( i in 2:(nSample+1) )
 	xlim <- quantile( intron.counts[,i], probs=c(0.005,0.995) )
 	ylim <- quantile( exon.counts[,i]-intron.counts[,i], probs=c(0.005,0.995) )
 	# draw the scatterplot for exon-intron vs. intron
-	smoothScatter( intron.counts[,i], exon.counts[,i]-intron.counts[,i], xlim=xlim,ylim=ylim, xlab="Δintron", ylab="Δexon–Δintron" )
+	smoothScatter( intron.counts[,i], exon.counts[,i]-intron.counts[,i], nbin=400, nrpoints=0, xlim=xlim,ylim=ylim, xlab="Δintron", ylab="Δexon–Δintron" )
 	sorting <- order(intron.counts[,i])
-	lines(c(-5,5),c(0,0),col="blue")
-	lines(c(0,0),c(-5,5),col="blue")
+	lines(xlim,c(0,0),col="blue")
+	lines(c(0,0),ylim,col="blue")
 	lines(intron.counts[sorting,i],lfit$fitted[sorting],col="black")
 
 	# draw the scatterplot for bias-removed ptr vs. intron	
-	smoothScatter( intron.counts[,i], ptr[,i], xlim=xlim,ylim=ylim, xlab="Δintron", ylab="unbiased Δexon–Δintron" )
-	lines(c(-5,5),c(0,0),col="blue")
-	lines(c(0,0),c(-5,5),col="blue")
+	smoothScatter( intron.counts[,i], ptr[,i], nbin=400, nrpoints=0, xlim=xlim,ylim=ylim, xlab="Δintron", ylab="unbiased Δexon–Δintron" )
+	lines(xlim,c(0,0),col="blue")
+	lines(c(0,0),ylim,col="blue")
 
 	dev.off()
 }
