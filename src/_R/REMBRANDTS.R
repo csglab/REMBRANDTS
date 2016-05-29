@@ -1,13 +1,17 @@
 library(gplots)
 
+########### Identify the input arguments
+
 args <- commandArgs(trailingOnly = TRUE)
 jobID <- args[1]
 stringency <- as.numeric(args[2])
+fitMode <- args[3]
 
 tempFolder <- paste("./tmp/",jobID,sep="")
 outputFolder <- paste("./out/",jobID,sep="")
 
-# read the exon and intron centered normalized reads, and the total read counts
+########### read the exon and intron centered normalized reads, and the total read counts
+
 exon <- read.csv(paste(tempFolder,"/vsd_normalized.exonic.all.centered.mx.txt",sep=""),sep="\t")
 nSample <- ncol(exon)-1
 exonRawCounts <- read.csv(paste(tempFolder,"/vsd_normalized.exonic.all.mx.txt",sep=""),sep="\t")
@@ -20,7 +24,8 @@ intronRawCounts <- read.csv(paste(tempFolder,"/vsd_normalized.exonic.all.mx.txt"
 if( nSample != ncol(intronRawCounts)-1 )
   print("Error: unequal sample numbers")
 
-# calculate the median counts
+########### calculate the median counts, and merge all relevant data
+
 exonRawCounts$MedianExon <- apply(exonRawCounts[,2:ncol(exonRawCounts)],1,median)
 intronRawCounts$MedianIntron <- apply(intronRawCounts[,2:ncol(intronRawCounts)],1,median)
 
@@ -28,7 +33,8 @@ merged <- merge(exon,intron,by="GeneID")
 merged <- merge( merged, exonRawCounts[,c(1,ncol(exonRawCounts))],by="GeneID")
 merged <- merge( merged, intronRawCounts[,c(1,ncol(intronRawCounts))],by="GeneID")
 
-# optimize the total read count threshold so as to maximize correlation between exon and intron fold-changes
+########### optimize the total read count threshold so as to maximize correlation between exon and intron fold-changes
+
 print( paste( "Optimizing read count cutoff at stringency ", stringency, " ...", sep="" ) )
 correl_all <- cor(
 	unlist(merged[ , 2:(nSample+1)]),
@@ -59,6 +65,8 @@ print( paste( "Maximum correlation is ", correl_max, sep="" ) )
 print( paste( "Selected threshold is ", threshold, sep="" ) )
 print( paste( "Number of remaining genes is ", sum(merged$MedianIntron > threshold & merged$MedianExon > threshold), sep="" ) )
 
+########### Filter the data to include only genes that pass the read count cutoff, and create a scatterplot
+
 # the filtered exon counts
 y <- unlist(merged[ merged$MedianIntron > threshold & merged$MedianExon > threshold, 2:(nSample+1)])
 # the filtered intron counts
@@ -70,17 +78,19 @@ smoothScatter( x, y, colramp=colorRampPalette(c( "white", "red", "black" ) ), nb
 lines( c(-10,+10), c(0,0), lty=3 )
 lines( c(0,0), c(-10,+10), lty=3 )
 
+########### Now perform bias removal
+
 # The intron counts represent the effect of transcriptional changes
 # The exon counts represent the combined effect of transcriptional and post-transcriptional changes
-# Model the exon counts as a function of intron counts, so that by subtracting the fitted values
-#  from exon counts, only the effect of post-transcriptional regulation remains
+# Model the exon-intron counts as a function of intron counts, so that by subtracting the fitted values
+# only the effect of post-transcriptional regulation remains
 
 # create a copy of exon counts
 exon.counts <- merged[ merged$MedianIntron > threshold & merged$MedianExon > threshold, 1:(nSample+1)]
 # plot the similarity heatmap for exon counts
 sim <- cor(as.matrix(exon.counts[,2:(nSample+1)]))
-width  <- ncol(sim) * 15 + 200
-height <- nrow(sim) * 15 + 200
+width  <- ncol(sim) * 36.9 + 231
+height <- nrow(sim) * 36.9 + 231
 jpeg(file=paste(outputFolder,"/exonic.filtered.correl.heatmap.jpg",sep=""),
 	width=width,height=height)
 heatmap.2(sim, distfun=function(x) as.dist(1-x), trace="none", margin=c(10, 10),symm=T,revC=T,breaks=seq(-1,1,length.out=256),col=colorRampPalette(c("blue","white","red"))(255), key.title=NA, key.xlab="Pearson correlation", density.info="none", key.ylab=NA, keysize=0.85)
@@ -89,8 +99,8 @@ heatmap.2(sim, distfun=function(x) as.dist(1-x), trace="none", margin=c(10, 10),
 intron.counts <- merged[ merged$MedianIntron > threshold & merged$MedianExon > threshold, c(1,(nSample+2):(2*nSample+1))]
 # plot the similarity heatmap for intron counts
 sim <- cor(as.matrix(intron.counts[,2:(nSample+1)]))
-width  <- ncol(sim) * 15 + 200
-height <- nrow(sim) * 15 + 200
+width  <- ncol(sim) * 36.9 + 231
+height <- nrow(sim) * 36.9 + 231
 jpeg(file=paste(outputFolder,"/intronic.filtered.correl.heatmap.jpg",sep=""),
 	width=width,height=height)
 heatmap.2(sim, distfun=function(x) as.dist(1-x), trace="none", margin=c(10, 10),symm=T,revC=T,breaks=seq(-1,1,length.out=256),col=colorRampPalette(c("blue","white","red"))(255), key.title=NA, key.xlab="Pearson correlation", density.info="none", key.ylab=NA, keysize=0.85)
@@ -99,14 +109,44 @@ heatmap.2(sim, distfun=function(x) as.dist(1-x), trace="none", margin=c(10, 10),
 ptr <- exon.counts
 for( i in 2:(nSample+1) )
 {
-  fit <- glm( exon.counts[,i] ~ intron.counts[,i] )
-  ptr[,i] = exon.counts[,i] - ( fit$coefficients[1] + fit$coefficients[2] * intron.counts[,i] )
+	if( fitMode == "linear" )
+		lfit <- glm( exon.counts[,i]-intron.counts[,i] ~ intron.counts[,i] )
+	else if( fitMode == "loess" )
+		lfit <- loess( exon.counts[,i]-intron.counts[,i] ~ intron.counts[,i], family="gaussian", span=0.5, degree=1 )
+	else
+	{
+		print("ERROR: Fit mode not recognized.")
+		quit(status=1)
+	}
+	
+	ptr[,i] = (exon.counts[,i]-intron.counts[,i]) - lfit$fitted
+
+	# draw the sample-specific scatterplots
+	jpeg(file=paste(outputFolder,"/sampleScatterplots/scatterplot.",colnames(exon.counts)[i],".jpg",sep=""),
+		width=700,height=400)
+	par(mfrow=c(1,2))
+
+	xlim <- quantile( intron.counts[,i], probs=c(0.005,0.995) )
+	ylim <- quantile( exon.counts[,i]-intron.counts[,i], probs=c(0.005,0.995) )
+	# draw the scatterplot for exon-intron vs. intron
+	smoothScatter( intron.counts[,i], exon.counts[,i]-intron.counts[,i], xlim=xlim,ylim=ylim, xlab="Δintron", ylab="Δexon–Δintron" )
+	sorting <- order(intron.counts[,i])
+	lines(c(-5,5),c(0,0),col="blue")
+	lines(c(0,0),c(-5,5),col="blue")
+	lines(intron.counts[sorting,i],lfit$fitted[sorting],col="black")
+
+	# draw the scatterplot for bias-removed ptr vs. intron	
+	smoothScatter( intron.counts[,i], ptr[,i], xlim=xlim,ylim=ylim, xlab="Δintron", ylab="unbiased Δexon–Δintron" )
+	lines(c(-5,5),c(0,0),col="blue")
+	lines(c(0,0),c(-5,5),col="blue")
+
+	dev.off()
 }
 
 # plot the similarity heatmap for deconvoluted PTR matrix
 sim <- cor(as.matrix(ptr[,2:(nSample+1)]))
-width  <- ncol(sim) * 15 + 200
-height <- nrow(sim) * 15 + 200
+width  <- ncol(sim) * 36.9 + 231
+height <- nrow(sim) * 36.9 + 231
 jpeg(file=paste(outputFolder,"/stability.filtered.correl.heatmap.jpg",sep=""),
 	width=width,height=height)
 heatmap.2(sim, distfun=function(x) as.dist(1-x), trace="none", margin=c(10, 10),symm=T,revC=T,breaks=seq(-1,1,length.out=256),col=colorRampPalette(c("blue","white","red"))(255), key.title=NA, key.xlab="Pearson correlation", density.info="none", key.ylab=NA, keysize=0.85)
