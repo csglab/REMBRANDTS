@@ -9,6 +9,7 @@ jobid=$1
 metadata=$2
 refdir=$3
 stringency=$4
+fitmode=$5
 
 if [ "$jobid" = "" ]; then
 	echo -e "\nUsage: bash MoSBAT.sh <jobID> <motif1.pwm> <motif2.pwm> <motif_type> <sequence_length> <sequence_count>\n"
@@ -19,6 +20,7 @@ echo "Job ID: "$jobid
 echo "Input metadata file: "$metadata
 echo "Reference directory for HTSeq-Count files: "$refdir
 echo "Stringency for filtering measurements: "$stringency
+echo "The mode of identifying bias parameters: "$fitmode
 
 if [ -e "$metadata" ]; then
 	echo "Metadata file found."
@@ -44,7 +46,8 @@ Rscript $deseq $jobid $metadata $refdir
 ####################### define output path
 out_folder="./out/"$jobid
 mkdir -p $out_folder
+mkdir -p $out_folder"/sampleScatterplots"
 
 ####################### run REMBRANDTS
 
-Rscript $rambrandts $jobid $stringency
+Rscript $rambrandts $jobid $stringency $fitmode
