@@ -12,7 +12,7 @@ stringency=$4
 fitmode=$5
 
 if [ "$jobid" = "" ]; then
-	echo -e "\nUsage: bash MoSBAT.sh <jobID> <motif1.pwm> <motif2.pwm> <motif_type> <sequence_length> <sequence_count>\n"
+	echo -e "\nUsage: bash REMBRANDTS.sh <jobID> <metadata.txt> <inputDir> <stringency> <biasMode>\n"
 	exit
 fi
 
