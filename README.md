@@ -67,7 +67,7 @@ REMBRANDTS creates the following output files in `./out/<jobID>/`
 
 #### Example
 
-Two example datasets are provided in the `./examples/` folder. You can run REMBRANDTS on these examples by running either of these commands:
+Two example datasets are provided in the `./examples/` folder. You can run REMBRANDTS on these examples using either of these commands:
 ```bash
 bash ./REMBRANDTS.sh Tissue_stability ./examples/Tissues.SRP056969/table.txt ./examples/Tissues.SRP056969 0.99 linear
 ```
