@@ -74,5 +74,5 @@ for( readType in c("exonic","intronic") )
 	height <- nrow(mat) * 36.9 + 231
 	jpeg(file=paste(outputFolder,"/vsd_normalized.",readType,".all.centered.correl.heatmap.jpg",sep=""),
 		width=width,height=height)
-	heatmap.2(mat, trace="none", margin=c(13, 13))
+	heatmap.2(mat, trace="none", margin=c(13, 13),breaks=seq(0,2,length.out=256),col=colorRampPalette(c("red","white","blue"))(255), key.title=NA, key.xlab="Pearson distance", density.info="none", key.ylab=NA)
 }
