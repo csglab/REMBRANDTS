@@ -74,4 +74,4 @@ bash ./REMBRANDTS.sh Tissue_stability ./examples/Tissues.SRP056969/table.txt ./e
 ```bash
 bash ./REMBRANDTS.sh AD_stability ./examples/AD.GSE53697/table.txt ./examples/AD.GSE53697 0.7 linear
 ```
-These commands should replicate the results presented in our paper.
+These commands should replicate the stability estimates presented in our paper.
