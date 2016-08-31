@@ -67,11 +67,14 @@ REMBRANDTS creates the following output files in `./out/<jobID>/`
 
 #### Example
 
-Two example datasets are provided in the `./examples/` folder. You can run REMBRANDTS on these examples using either of these commands:
+Three example datasets are provided in the `./examples/` folder. You can run REMBRANDTS on these examples using these commands:
 ```bash
-bash ./REMBRANDTS.sh Tissue_stability ./examples/Tissues.SRP056969/table.txt ./examples/Tissues.SRP056969 0.99 linear
+bash ./REMBRANDTS.sh Human_tissue_stability ./examples/Tissues.SRP056969/table.txt ./examples/Tissues.SRP056969 0.99 linear
 ```
 ```bash
 bash ./REMBRANDTS.sh AD_stability ./examples/AD.GSE53697/table.txt ./examples/AD.GSE53697 0.7 linear
+```
+```bash
+bash ./REMBRANDTS.sh Mouse_mixed_stability ./examples/Mouse.PMID26098447/table.txt ./examples/Mouse.PMID26098447 0.99 linear
 ```
 These commands should replicate the stability estimates presented in our paper.
