@@ -77,4 +77,10 @@ bash ./REMBRANDTS.sh AD_stability ./examples/AD.GSE53697/table.txt ./examples/AD
 ```bash
 bash ./REMBRANDTS.sh Mouse_mixed_stability ./examples/Mouse.PMID26098447/table.txt ./examples/Mouse.PMID26098447 0.99 linear
 ```
+```bash
+bash ./REMBRANDTS.sh Shen_2012_GSE29278_stability ./examples/Shen_2012_GSE29278_counts/table.txt ./examples/Shen_2012_GSE29278_counts 0.99 linear
+```
+```bash
+bash ./REMBRANDTS.sh Furlow_2015_GSE45162_stability ./examples/Furlow_2015_GSE45162_counts/table.txt ./examples/Furlow_2015_GSE45162_counts 0.99 linear
+```
 These commands should replicate the stability estimates presented in our paper.
