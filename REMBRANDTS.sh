@@ -35,11 +35,6 @@ tmp_folder="./tmp/"$jobid
 mkdir -p $tmp_folder
 
 ####################### run DESeq
-echo -n -e "GeneID\t" > $tmp_folder/"vsd_normalized.exonic.all.centered.mx.txt"
-echo -n -e "GeneID\t" > $tmp_folder/"vsd_normalized.exonic.all.mx.txt"
-echo -n -e "GeneID\t" > $tmp_folder/"vsd_normalized.intronic.all.centered.mx.txt"
-echo -n -e "GeneID\t" > $tmp_folder/"vsd_normalized.intronic.all.mx.txt"
-
 Rscript $deseq $jobid $metadata $refdir
 
 

@@ -1,5 +1,6 @@
 library(DESeq)
 library(gplots)
+library(tibble)
 
 args <- commandArgs(trailingOnly = TRUE)
 
@@ -14,7 +15,7 @@ sampleTable <- read.csv( tablePath, sep="\t" )
 for( readType in c("exonic","intronic") )
 {
 	print( paste("Analyzing ", readType, " reads ...", sep="") )
-	
+
 	for( batch in 1:max(sampleTable$Batch) )
 	{
 		print( paste("Analyzing batch ", batch, sep="") )
@@ -59,15 +60,15 @@ for( readType in c("exonic","intronic") )
 
 	all_normalized <- all_normalized[ apply(all_normalized,1,function(x) (sum(is.na(x))==0) ) , ]
 	write.table(
-		all_normalized,
+		rownames_to_column(df = as.data.frame(all_normalized), var = 'GeneID'),
 		paste(outputFolder,"/vsd_normalized.",readType,".all.mx.txt",sep=""),
-		quote=F, sep="\t", append=T )
+		quote=F, sep="\t", append=FALSE )
 
 	all_centered <- all_centered[ apply(all_centered,1,function(x) (sum(is.na(x))==0) ) , ]
 	write.table(
-		all_centered,
+		rownames_to_column(df = as.data.frame(all_centered), var = 'GeneID'),
 		paste(outputFolder,"/vsd_normalized.",readType,".all.centered.mx.txt",sep=""),
-		quote=F, sep="\t", append=T )
+		quote=F, sep="\t", append=FALSE )
 
 	mat = 1 - cor( all_centered, use="na.or.complete", method="pearson" )
 	width  <- ncol(mat) * 36.9 + 231
