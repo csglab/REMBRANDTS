@@ -37,7 +37,7 @@ For running REMBRANDTS, you need the following files:
   | Sample2 | ./htseq/Sample2.htseqCount.exonic.tab   | exonic   | 1     |
   | Sample2 | ./htseq/Sample2.htseqCount.intronic.tab | intronic | 1     |
 
-* **Read count files**. In the read count files, each row corresponds to one gene, with the first column representing the gene ID and the second column representing the total number of reads mapped to that gene (either intronic or exonic reads). This file should be generated using HTSeq-Count.
+* **Read count files**. In the read count files, each row corresponds to one gene, with the first column representing the gene ID and the second column representing the total number of reads mapped to that gene (either intronic or exonic reads). This file should be generated using HTSeq-Count. A complete workflow for generating read count files that are compatible with REMBRENDTS is described [here](https://github.com/csglab/CRIES).
 
 #### Usage
 
