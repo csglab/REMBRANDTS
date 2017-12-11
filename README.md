@@ -83,7 +83,7 @@ bash ./REMBRANDTS.sh Shen_2012_GSE29278_stability ./examples/Shen_2012_GSE29278_
 ```bash
 bash ./REMBRANDTS.sh Furlow_2015_GSE45162_stability ./examples/Furlow_2015_GSE45162_counts/table.txt ./examples/Furlow_2015_GSE45162_counts 0.99 linear
 ```
-These commands should replicate the stability estimates presented in our paper.
+These commands will replicate the stability estimates presented in [Alkallas et al. (Nat Commun, 2017)](https://www.nature.com/articles/s41467-017-00867-z).
 
 ## Citation
 Alkallas R, Fish L, Goodarzi H, Najafabadi HS (2017). Inference of RNA decay rate from transcriptional profiling highlights the regulatory programs of Alzheimer's disease. Nat Commun [8:909](https://www.nature.com/articles/s41467-017-00867-z)
