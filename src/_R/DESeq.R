@@ -60,13 +60,13 @@ for( readType in c("exonic","intronic") )
 
 	all_normalized <- all_normalized[ apply(all_normalized,1,function(x) (sum(is.na(x))==0) ) , ]
 	write.table(
-		rownames_to_column(df = as.data.frame(all_normalized), var = 'GeneID'),
+		rownames_to_column(as.data.frame(all_normalized), var = 'GeneID'),
 		paste(outputFolder,"/vsd_normalized.",readType,".all.mx.txt",sep=""),
 		quote=F, sep="\t", append=FALSE )
 
 	all_centered <- all_centered[ apply(all_centered,1,function(x) (sum(is.na(x))==0) ) , ]
 	write.table(
-		rownames_to_column(df = as.data.frame(all_centered), var = 'GeneID'),
+		rownames_to_column(as.data.frame(all_centered), var = 'GeneID'),
 		paste(outputFolder,"/vsd_normalized.",readType,".all.centered.mx.txt",sep=""),
 		quote=F, sep="\t", append=FALSE )
 
