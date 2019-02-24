@@ -7,22 +7,44 @@ jobID <- args[1]
 stringency <- as.numeric(args[2])
 fitMode <- args[3]
 
+if(length(args)>3) {
+  designFile <- args[4]
+} else
+{
+  designFile <- NULL
+}
+
 tempFolder <- paste("./tmp/",jobID,sep="")
 outputFolder <- paste("./out/",jobID,sep="")
 
 ########### read the exon and intron centered normalized reads, and the total read counts
 
 exon <- read.csv(paste(tempFolder,"/vsd_normalized.exonic.all.centered.mx.txt",sep=""),sep="\t")
+exon <- cbind(exon[1],exon[,-1][,order(colnames(exon[,-1]))]) # sort by column name
 nSample <- ncol(exon)-1
+
 exonRawCounts <- read.csv(paste(tempFolder,"/vsd_normalized.exonic.all.mx.txt",sep=""),sep="\t")
-if( nSample != ncol(exonRawCounts)-1 )
-  print("Error: unequal sample numbers")
+if( nSample != ncol(exonRawCounts)-1 ) stop("Error: unequal sample numbers")
+
 intron <- read.csv(paste(tempFolder,"/vsd_normalized.intronic.all.centered.mx.txt",sep=""),sep="\t")
-if( nSample != ncol(intron)-1 )
-  print("Error: unequal sample numbers")
+intron <- cbind(intron[1],intron[,-1][,order(colnames(intron[,-1]))]) # sort by column name
+if( nSample != ncol(intron)-1 ) stop("Error: unequal sample numbers")
+if( sum(colnames(intron) != colnames(exon)) > 0 ) stop("Error: incompatible columns")
+
 intronRawCounts <- read.csv(paste(tempFolder,"/vsd_normalized.intronic.all.mx.txt",sep=""),sep="\t")
-if( nSample != ncol(intronRawCounts)-1 )
-  print("Error: unequal sample numbers")
+if( nSample != ncol(intronRawCounts)-1 ) stop("Error: unequal sample numbers")
+
+########### read the experimental design
+if( !is.null(designFile) ) {
+  designMx <- read.csv(designFile,sep="\t")
+  designMx <- designMx[order(as.character(designMx[,1])),]
+  if( sum(colnames(intron[,-1]) != designMx[,1]) > 0 ) stop("Error: incompatible design matrix")
+} else
+{
+  cat("No experiment design file is provided. Omitting design.\n")
+  designMx <- NULL
+}
+
 
 ########### calculate the median counts, and merge all relevant data
 
@@ -110,17 +132,20 @@ ptr <- exon.counts
 nGenes <- nrow(exon.counts)
 for( i in 1:nGenes )
 {
-	y <- unlist(exon.counts[i,2:(nSample+1)] - intron.counts[i,2:(nSample+1)])
+	y <- unlist(exon.counts[i,2:(nSample+1)])
 	x <- unlist(intron.counts[i,2:(nSample+1)])
-	if( fitMode == "linear" )
-		lfit <- glm( y ~ x )
-	else
-	{
+	if( fitMode == "linear" ){
+	  if( is.null(designMx) ) {
+	    lfit <- glm( y ~ x ) 
+	  } else {
+	    lfit <- glm( y ~ ., data=cbind(y,x,as.data.frame(designMx[,-1])) )
+	  }
+	} else {
 		print("ERROR: Fit mode not recognized.")
 		quit(status=1)
 	}
 	
-	ptr[i,2:(nSample+1)] = y - fitted(lfit)
+	ptr[i,2:(nSample+1)] = y - ( coef(lfit)[1] + x * coef(lfit)[2] )
 	
 #	print(i)
 }

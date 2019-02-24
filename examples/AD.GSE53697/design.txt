@@ -1,0 +1,12 @@
+Label	Condition
+AD_9	AD
+AD_10	AD
+AD_11	AD
+AD_15	AD
+AD_16	AD
+AD_17	AD
+Ctrl_1	Ctrl
+Ctrl_3	Ctrl
+Ctrl_6	Ctrl
+Ctrl_7	Ctrl
+Ctrl_8	Ctrl

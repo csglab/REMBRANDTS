@@ -39,12 +39,24 @@ For running REMBRANDTS, you need the following files:
 
 * **Read count files**. In the read count files, each row corresponds to one gene, with the first column representing the gene ID and the second column representing the total number of reads mapped to that gene (either intronic or exonic reads). These files can be generated using HTSeq-count. A complete workflow for generating read count files that are compatible with REMBRENDTS is described [here](https://github.com/csglab/CRIES).
 
+* **Experimental design file**. This file is a tab-delimited table with each row corresponding to one sample. The first column includes the sample labels, which must be the same as the sample labels in the metadata file. The other columns correspond to the variables in the experimental design. The purpose of this table is to ensure that during bias correction, the effect of the biological variables of interest are not subtracted from the stability signal. Note that this table is optional.
+
+  An example design table is shown below:
+  
+  | Label   | Condition |
+  | ------- | --------- |
+  | Sample1 | Treated   |
+  | Sample2 | Treated   |
+  | Sample3 | Control   |
+  | Sample4 | Control   |
+
+
 #### Usage
 
 To run REMBRANDTS, use the following command:
 
 ```bash
-bash ./REMBRANDTS.sh <jobID> <metadata.txt> <inputDir> <stringency> <biasMode>
+bash ./REMBRANDTS.sh <jobID> <metadata.txt> <inputDir> <stringency> <biasMode> [design.txt]
 ```
 * `jobID`: A job name that is used to create the output directory.
 * `inputDir`: The directory relative to which the read count file paths are determined.
@@ -84,6 +96,12 @@ bash ./REMBRANDTS.sh Shen_2012_GSE29278_stability ./examples/Shen_2012_GSE29278_
 bash ./REMBRANDTS.sh Furlow_2015_GSE45162_stability ./examples/Furlow_2015_GSE45162_counts/table.txt ./examples/Furlow_2015_GSE45162_counts 0.99 linear
 ```
 These commands will replicate the stability estimates presented in [Alkallas et al. (Nat Commun, 2017)](https://www.nature.com/articles/s41467-017-00867-z).
+
+Note that for the `AD_stability` example, an example design file is also included, which can be optionally provided in order for REMBRANDTS to consider the biological variable of interest (AD vs. control) when removing the bias from stability estimates:
+```bash
+bash ./REMBRANDTS.sh AD_stability ./examples/AD.GSE53697/table.txt ./examples/AD.GSE53697 0.7 linear ./examples/AD.GSE53697/design.txt
+```
+
 
 ## Citation
 Alkallas R, Fish L, Goodarzi H, Najafabadi HS (2017). Inference of RNA decay rate from transcriptional profiling highlights the regulatory programs of Alzheimer's disease. Nat Commun [8:909](https://www.nature.com/articles/s41467-017-00867-z)
