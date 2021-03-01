@@ -1,4 +1,4 @@
-library(DESeq)
+library(DESeq2)
 library(gplots)
 library(tibble)
 
@@ -20,16 +20,16 @@ for( readType in c("exonic","intronic") )
 	{
 		print( paste("Analyzing batch ", batch, sep="") )
 
-		cds <- newCountDataSetFromHTSeqCount(
-			sampleTable[sampleTable$Batch==batch & sampleTable$ReadType==readType,],
-			inputFolder)
+		cds <- DESeqDataSetFromHTSeqCount( # omits special rows from htseq-count
+		    sampleTable = sampleTable[sampleTable$Batch==batch & sampleTable$ReadType==readType,],
+		    directory = inputFolder,
+		    design = ~ 1 # required parameter
+		)
 
-		cds <- estimateSizeFactors( cds )
-		dispersion <- estimateDispersions( cds, method = "blind" )
-		vsd = varianceStabilizingTransformation( dispersion )
+		# estimate size factors, dispersions, and perform VST
+		vsd <- vst(object = cds, blind = T)
 
-		normalized <- exprs(vsd)
-		normalized <- normalized[1:(dim(normalized)[1]-5),] # remove the last lines corresponding to ignored reads
+        normalized <- assay(vsd)
 		normalized <- normalized[apply(normalized,1,sd)>0,] # remove genes that have zero reads all across the samples
 
 		write.table(
