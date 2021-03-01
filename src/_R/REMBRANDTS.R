@@ -97,6 +97,7 @@ exonHeatmap <- heatmap.2(sim, distfun=function(x) as.dist(1-x), trace="none", ma
 
 # create a copy of intron counts
 intron.counts <- merged[ merged$MedianIntron > threshold & merged$MedianExon > threshold, c(1,(nSample+2):(2*nSample+1))]
+intron.counts.MedianIntron <- merged[ merged$MedianIntron > threshold & merged$MedianExon > threshold, 'MedianIntron'] # need this to estimate bias using neighborhood method
 # plot the similarity heatmap for intron counts
 sim <- cor(as.matrix(intron.counts[,2:(nSample+1)]))
 width  <- ncol(sim) * 36.9 + 231
@@ -106,25 +107,61 @@ jpeg(file=paste(outputFolder,"/intronic.filtered.correl.heatmap.jpg",sep=""),
 heatmap.2(sim, Rowv=exonHeatmap$rowDendrogram, Colv=exonHeatmap$colDendrogram, distfun=function(x) as.dist(1-x), trace="none", margin=c(10, 10),symm=T,revC=F,breaks=seq(-1,1,length.out=256),col=colorRampPalette(c("blue","white","red"))(255), key.title=NA, key.xlab="Pearson correlation", density.info="none", key.ylab=NA, keysize=0.85)
 
 # gene-by-gene, deconvolute the PTR effect
-ptr <- exon.counts
-colnames(ptr) <- gsub('\\.exon$', '', colnames(ptr))
+intron.counts.sd <- apply(intron.counts[ , -1], 1, sd) # gene variation in transcription
+diffTxIdx <- which(intron.counts.sd > quantile(intron.counts.sd, 0.25)) # diff transcribed gene indices
+
+ptr <- ptr2 <- exon.counts
+colnames(ptr) <- colnames(ptr2) <- gsub('\\.exon$', '', colnames(ptr))
 nGenes <- nrow(exon.counts)
+biast <- biast2 <- rep(NA_real_, nGenes)
 for( i in 1:nGenes )
 {
-	y <- unlist(exon.counts[i,2:(nSample+1)] - intron.counts[i,2:(nSample+1)])
-	x <- unlist(intron.counts[i,2:(nSample+1)])
-	if( fitMode == "linear" )
-		lfit <- glm( y ~ x )
-	else
-	{
-		print("ERROR: Fit mode not recognized.")
-		quit(status=1)
-	}
+    # adjust bias using information from gene i
+    yi <- unlist(exon.counts[i,2:(nSample+1)] - intron.counts[i,2:(nSample+1)])
+    xi <- unlist(intron.counts[i,2:(nSample+1)])
+    if( fitMode == "linear" )
+        lfit <- glm( yi ~ xi )
+    else
+    {
+        print("ERROR: Fit mode not recognized.")
+        quit(status=1)
+    }
 
-	ptr[i,2:(nSample+1)] = y - fitted(lfit)
+    ptr[i,2:(nSample+1)] = yi - fitted(lfit)
+    biast[i] <- coef(lfit)['xi']
 
-#	print(i)
+    # adjust bias using information from neighbourhood of gene i
+    # useful for experimental designs with less biological heterogeneity
+    # assumes most genes are not diff stabilized
+    gene.neighbours <- order(
+        abs(intron.counts.MedianIntron[i] - intron.counts.MedianIntron),
+        decreasing = F
+    )
+
+    gene.neighbours <- head(gene.neighbours[gene.neighbours %in% diffTxIdx], 100) # use 100 nearest genes based on median abundance
+
+    y <- unlist(exon.counts[gene.neighbours,2:(nSample+1)] - intron.counts[gene.neighbours,2:(nSample+1)])
+    x <- unlist(intron.counts[gene.neighbours,2:(nSample+1)])
+    if( fitMode == "linear" )
+        lfit <- glm( y ~ x )
+    else
+    {
+        print("ERROR: Fit mode not recognized.")
+        quit(status=1)
+    }
+
+    ptr2[i,2:(nSample+1)] = yi - predict(lfit, newdata = data.frame(x = xi), type = 'response')
+    biast2[i] <- coef(lfit)['x']
+
+    #	print(i)
 }
+
+jpeg(file=paste(outputFolder,"/perGene_bias_vs_accrossGenes_(experimental).jpg",sep=""),
+     width=300,height=350)
+smoothScatter( biast, biast2, colramp=colorRampPalette(c( "white", "red", "black" ) ), nbin=400, nrpoints=0, xlab="per gene", ylab="across genes" )
+lines( c(-1,+1), c(0,0), lty=3 )
+lines( c(0,0), c(-1,+1), lty=3 )
+dev.off()
 # save.image('~/Documents/book_chapter/remb.RData')
 
 # draw the sample-specific scatterplots
@@ -167,3 +204,4 @@ write.table(cutoff_table,paste(outputFolder,"/cutoff.txt",sep=""),sep="\t",quote
 write.table(exon.counts,paste(outputFolder,"/exonic.filtered.mx.txt",sep=""),sep="\t",quote=F,row.names=F)
 write.table(intron.counts,paste(outputFolder,"/intronic.filtered.mx.txt",sep=""),sep="\t",quote=F,row.names=F)
 write.table(ptr,paste(outputFolder,"/stability.filtered.mx.txt",sep=""),sep="\t",quote=F,row.names=F)
+write.table(ptr2,paste(outputFolder,"/stability.filtered.mx_(experimental).txt",sep=""),sep="\t",quote=F,row.names=F)
