@@ -74,7 +74,7 @@ linear.models.coef.table[ , GeneID_noVersion :=
 str(linear.models.coef.table, strict.width = 'cut')
 
 ### Load predicted RNA targets of microRNA families from targetScan ####
-tgtScan <- fread('./examples/MMB_material/Predicted_Targets_Info.default_predictions.txt.gz')
+tgtScan <- fread('./examples/MMB_material/Predicted_Targets_Info.default_predictions_const.txt.gz')
 tgtScan[ , GeneID_noVersion :=
     gsub(x = `Gene ID`, pattern = '\\..*$', replacement = ''), ]
 
@@ -113,8 +113,8 @@ diff_miRNA_activity <- apply(
     X = microRNA_bm, MARGIN = 2,
     FUN = function(gene_binding_status) {
         out <- coin::wilcox_test(
-            formula = gene_dStability ~ factor(gene_binding_status, levels = 0:1),
-            alternative = 'two.sided'
+            formula = gene_dStability ~ factor(gene_binding_status, levels = 1:0),
+            alternative = 'two.sided' # mu = y1 - y2
         )
 
         data.table(
@@ -128,3 +128,34 @@ diff_miRNA_activity <- rbindlist(diff_miRNA_activity, idcol = 'miRNA_family')
 diff_miRNA_activity[ , FDR := p.adjust(p = p.value, method = 'fdr'), ]
 
 head(diff_miRNA_activity[order(p.value), ], n = 15)
+
+### Plot for chapter ####
+library(ggplot2)
+to.plot <- data.table(
+    miR_124_tgt = ifelse(microRNA_bm[ , 'miR-124'] == 1, 'yes', 'no'),
+    dStability = gene_dStability
+)[rowSums(microRNA_bm) > 0, ]
+
+png(file = '~/Documents/book_chapter/mir124.png', width = 5, height = 3.5, units = 'in', res = 900)
+
+ggp <- ggplot(mapping = aes(x = dStability, fill = miR_124_tgt), data = to.plot) + geom_density(alpha = 0.5, color = 'grey') +
+    theme_minimal() +
+    scale_fill_manual(
+        values = c(yes = 'red', no = 'blue'),
+        name = 'miR-124 targets'
+    ) +
+    geom_vline(
+        xintercept = median(to.plot$dStability),
+        linetype = 2
+    ) +
+    xlab(
+        'differential stability (AD / Control)'
+    ) +
+    ylab(
+        'density of genes'
+    ) +
+    theme(legend.position = 'top')
+
+print(ggp)
+
+dev.off()
