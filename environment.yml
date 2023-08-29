@@ -1,0 +1,9 @@
+name: stbl
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - bioconductor-deseq2
+  - gplots
+  - tibble
+  - ipykernel
