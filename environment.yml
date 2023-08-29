@@ -4,6 +4,6 @@ channels:
   - bioconda
 dependencies:
   - bioconductor-deseq2
-  - gplots
-  - tibble
+  - r-gplots
+  - r-tibble
   - ipykernel
