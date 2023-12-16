@@ -1,4 +1,4 @@
-library(gplots)
+suppressMessages(suppressWarnings(library (gplots)))
 
 ########### Identify the input arguments
 

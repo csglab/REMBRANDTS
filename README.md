@@ -1,3 +1,5 @@
+[![DOI:10.1038/s41467-017-00867-z](https://zenodo.org/badge/DOI/DOI-10.1038/s41467-017-00867-z.svg)](https://doi.org/10.1038/s41467-017-00867-z)
+
 # REMBRANDTS
 
 ### REMoving Bias from Rna-seq ANalysis of Differential Transcript Stability
@@ -7,9 +9,9 @@ REMBRANDTS is a package for analysis of RNA-seq data across multiple samples in 
 ### Requirements
 
 1. Unix-compatible OS
-2. [R](https://www.r-project.org/) version 3.2.3 or later
+2. [R](https://www.r-project.org/) version 3.2.3 or later (tested on 4.3.1)
 3. R [gplots](https://cran.r-project.org/web/packages/gplots/index.html) library
-4. R [DESeq](http://bioconductor.org/packages/release/bioc/html/DESeq.html) library
+4. R [DEseq2](https://bioconductor.org/packages/release/bioc/html/DESeq2.html) library (previously [DESeq](http://bioconductor.org/packages/release/bioc/html/DESeq.html))
 
 ### Installation
 

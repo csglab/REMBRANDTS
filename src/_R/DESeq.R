@@ -1,6 +1,6 @@
-library(DESeq2)
-library(gplots)
-library(tibble)
+suppressMessages(suppressWarnings(library (DESeq2)))
+suppressMessages(suppressWarnings(library (gplots)))
+suppressMessages(suppressWarnings(library (tibble)))
 
 args <- commandArgs(trailingOnly = TRUE)
 
