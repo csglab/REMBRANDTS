@@ -1,3 +1,5 @@
+[![DOI:10.1038/s41467-017-00867-z](https://zenodo.org/badge/DOI/DOI-10.1038/s41467-017-00867-z.svg)](https://doi.org/10.1038/s41467-017-00867-z)
+
 # REMBRANDTS
 
 ### REMoving Bias from Rna-seq ANalysis of Differential Transcript Stability
